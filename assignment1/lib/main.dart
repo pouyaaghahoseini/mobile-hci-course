@@ -1,55 +1,139 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
-void main() => runApp(MaterialApp(home: Home()));
-
-class Home extends StatefulWidget {
-  @override
-  _HomeState createState() => _HomeState();
+void main() {
+  runApp(MaterialApp(
+    title: 'Fitts Law Experiment',
+    home: FirstRoute(),
+  ));
 }
 
-class _HomeState extends State<Home> {
-  bool _pressed = false;
+class FirstRoute extends StatefulWidget {
+  @override
+  _FirstRouteState createState() => _FirstRouteState();
+}
+
+class _FirstRouteState extends State<FirstRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text("My First App"),
-      //   centerTitle: true,
-      //   backgroundColor: Colors.red[600],
-      // ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Row(
-            children: [Text("Hello There")],
-          ),
-          Container(
-            padding: EdgeInsets.all(20.0),
-            color: Colors.cyan,
-            child: Text('One'),
-          ),
-          Container(
-            padding: EdgeInsets.all(20.0),
-            color: Colors.amber,
-            child: Text('Two'),
-          ),
-          Container(
-            padding: EdgeInsets.all(20.0),
-            color: Colors.pinkAccent,
-            child: Text('Three'),
-          ),
-        ],
+      appBar: AppBar(
+        title: Text('Welcome to Fitts Law Experiment'),
       ),
+      body: Center(
+          child: Text(
+        'Please use your index finger to hit the buttons\n First select the start then the target \n Hit GO to start, Thanks!',
+        style: TextStyle(fontSize: 15),
+      )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() {
-            _pressed = !_pressed;
-          });
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SecondRoute()),
+          );
         },
-        child: Text("Click!"),
-        backgroundColor: _pressed ? Colors.blue : Colors.red,
+        child: Text('GO'),
       ),
+    );
+  }
+}
+
+class SecondRoute extends StatefulWidget {
+  @override
+  _SecondRouteState createState() => _SecondRouteState();
+}
+
+class _SecondRouteState extends State<SecondRoute> {
+  var topRandom = Random();
+  var leftRandom = Random();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Experiment Started!"),
+      ),
+      body: Stack(
+        children: [
+          newPoint(),
+          // Positioned(
+          //   child: StartingPoint(),
+          //   top: topRandom.nextInt(680).toDouble(),
+          //   left: topRandom.nextInt(320).toDouble(),
+          // ),
+          Positioned(
+            child: TargetPoint(200),
+            top: 100,
+            left: 50,
+          )
+        ],
+      ),
+    );
+  }
+}
+
+Widget newPoint() => Positioned(
+      child: StartingPoint(),
+      top: Random().nextInt(680).toDouble(),
+      left: Random().nextInt(320).toDouble(),
+    );
+
+class StartingPoint extends StatefulWidget {
+  @override
+  _StartingPointState createState() => _StartingPointState();
+}
+
+class _StartingPointState extends State<StartingPoint> {
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      backgroundColor: Colors.amber,
+      child: Text("A"),
+      onPressed: () {
+        StartingPoint();
+        newPoint();
+        setState(() {});
+      }, //make a new positioned button
+    );
+    // return MaterialButton(
+    //   height: 50,
+    //   color: Colors.red[400],
+    //   shape: CircleBorder(),
+    //   onPressed: () {
+    //     StartingPoint();
+    //   },
+    //   child: Text('START'),
+    // );
+  }
+}
+
+class TargetPoint extends StatefulWidget {
+  int buttonHeight = 50;
+  TargetPoint(targetSize) {
+    buttonHeight = targetSize;
+  }
+  @override
+  _TargetPointState createState() => _TargetPointState();
+}
+
+class _TargetPointState extends State<TargetPoint> {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialButton(
+      height: widget.buttonHeight.toDouble(),
+      color: Colors.red[800],
+      shape: CircleBorder(),
+      onPressed: () {
+        // Navigator.pop(context);
+        setState(() {
+          TargetPoint(200);
+        });
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => SecondRoute()),
+        // );
+      },
+      child: Text('TARGET'),
     );
   }
 }
