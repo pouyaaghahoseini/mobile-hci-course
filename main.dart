@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -45,11 +46,15 @@ class SecondRoute extends StatefulWidget {
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  var topRandom = Random();
-  var leftRandom = Random();
+  //Fields
+  var random = Random();
 
   @override
   Widget build(BuildContext context) {
+    double topRandom = random.nextInt(680).toDouble();
+    double leftRandom = random.nextInt(320).toDouble();
+    int targetSize = (random.nextInt(3) * 20) + 50;
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Experiment Started!"),
@@ -58,13 +63,13 @@ class _SecondRouteState extends State<SecondRoute> {
         children: [
           Positioned(
             child: StartingPoint(),
-            top: topRandom.nextInt(680).toDouble(),
-            left: topRandom.nextInt(320).toDouble(),
+            top: topRandom,
+            left: leftRandom,
           ),
           Positioned(
-            child: TargetPoint(200),
-            top: 100,
-            left: 50,
+            child: TargetPoint(targetSize),
+            top: topRandom - 60,
+            left: leftRandom - 60,
           )
         ],
       ),
@@ -93,7 +98,8 @@ class _StartingPointState extends State<StartingPoint> {
 }
 
 class TargetPoint extends StatefulWidget {
-  int buttonHeight = 50;
+  int buttonHeight = 50; //default
+  //int counter = 0;
   TargetPoint(targetSize) {
     buttonHeight = targetSize;
   }
