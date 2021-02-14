@@ -5,16 +5,20 @@ import 'package:flutter/material.dart';
 void main() {
   runApp(MaterialApp(
     title: 'Fitts Law Experiment',
-    home: FirstRoute(),
+    home: Home(),
+    // routes: {
+    //   '/': (context) => Home(),
+    //   '/home': (context) =>
+    // },
   ));
 }
 
-class FirstRoute extends StatefulWidget {
+class Home extends StatefulWidget {
   @override
-  _FirstRouteState createState() => _FirstRouteState();
+  _HomeState createState() => _HomeState();
 }
 
-class _FirstRouteState extends State<FirstRoute> {
+class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,10 +49,19 @@ class SecondRoute extends StatefulWidget {
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  var topRandom = Random();
-  var leftRandom = Random();
+  // double topRandom, leftRandom;
+  double topRandom = Random().nextInt(350).toDouble() + 250.0;
+  double leftRandom = Random().nextInt(320).toDouble();
+
+  @override
+  void initState() {
+    print("initstate function ran");
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    print("build function ran");
     return Scaffold(
       appBar: AppBar(
         title: Text("Experiment Started!"),
@@ -57,9 +70,20 @@ class _SecondRouteState extends State<SecondRoute> {
         children: [
           newPoint(),
           // Positioned(
-          //   child: StartingPoint(),
-          //   top: topRandom.nextInt(680).toDouble(),
-          //   left: topRandom.nextInt(320).toDouble(),
+          //   child: FloatingActionButton(
+          //     backgroundColor: Colors.amber,
+          //     child: Text("A"),
+          //     onPressed: () {
+          //       setState(() {
+          //         topRandom = Random().nextInt(350).toDouble() + 250.0;
+          //         leftRandom = Random().nextInt(320).toDouble();
+          //         print("topRandom is $topRandom");
+          //         print("leftRandom is $leftRandom");
+          //       });
+          //     },
+          //   ),
+          //   top: topRandom,
+          //   left: leftRandom,
           // ),
           Positioned(
             child: TargetPoint(200),
@@ -70,13 +94,24 @@ class _SecondRouteState extends State<SecondRoute> {
       ),
     );
   }
-}
 
-Widget newPoint() => Positioned(
-      child: StartingPoint(),
-      top: Random().nextInt(680).toDouble(),
-      left: Random().nextInt(320).toDouble(),
-    );
+  Widget newPoint() => Positioned(
+        child: FloatingActionButton(
+          backgroundColor: Colors.amber,
+          child: Text("A"),
+          onPressed: () {
+            setState(() {
+              topRandom = Random().nextInt(350).toDouble() + 250.0;
+              leftRandom = Random().nextInt(320).toDouble();
+              print("topRandom is $topRandom");
+              print("leftRandom is $leftRandom");
+            });
+          },
+        ),
+        top: topRandom,
+        left: leftRandom,
+      );
+}
 
 class StartingPoint extends StatefulWidget {
   @override
@@ -89,11 +124,7 @@ class _StartingPointState extends State<StartingPoint> {
     return FloatingActionButton(
       backgroundColor: Colors.amber,
       child: Text("A"),
-      onPressed: () {
-        StartingPoint();
-        newPoint();
-        setState(() {});
-      }, //make a new positioned button
+      onPressed: () {},
     );
     // return MaterialButton(
     //   height: 50,
