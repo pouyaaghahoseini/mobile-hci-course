@@ -41,7 +41,8 @@ class _HomeState extends State<Home> {
                   width: 150.0,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/experiment',
+                      Navigator.pushNamed(context,
+                          '/experiment', // gotta push the next screen while passing the input method.
                           arguments: 'Thumb');
                     },
                     child: const Text(
@@ -56,7 +57,8 @@ class _HomeState extends State<Home> {
                   width: 200.0,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/experiment',
+                      Navigator.pushNamed(context,
+                          '/experiment', // gotta push the next screen while passing the input method.
                           arguments: 'Index');
                     },
                     child: const Text(
