@@ -16,7 +16,7 @@ List findTarget(double r, double w, double x, double y) {
   top = x + r * cos(angle);
   left = y + r * sin(angle);
   if (top - w > 0 && top + w < 832 && left - w > 0 && left + w < 600) {
-    return [top, left]; // TODO: make sure buttons don't overlap.
+    return [top, left]; // TODO: make sure buttons don't overlap. changed
   } else {
     return findTarget(r, w, x, y);
   }

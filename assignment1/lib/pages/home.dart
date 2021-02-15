@@ -42,7 +42,7 @@ class _HomeState extends State<Home> {
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pushNamed(context,
-                          '/experiment', // gotta push the next screen while passing the input method.
+                          '/experiment', // gotta push the next screen while passing the input method
                           arguments: 'Thumb');
                     },
                     child: const Text(
