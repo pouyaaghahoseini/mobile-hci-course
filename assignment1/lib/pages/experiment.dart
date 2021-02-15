@@ -1,20 +1,24 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-List findTarget(int r, double x, double y) {
-  // This functions finds a suitable random target for the start button.
-  double top,
-      left; // This is the top and left padding for target. we return them as a List.
+List findStart(double w) {
+  double top;
+  double left;
+  top = Random().nextDouble() * (832.0 - 2 * w) + (w);
+  left = Random().nextDouble() * (600.0 - 2 * w) + (w);
+  return [top, left];
+}
+
+List findTarget(double r, double w, double x, double y) {
+  double top;
+  double left;
   double angle = Random().nextDouble() * 2 * pi; // generates a random angle.
-  top = x +
-      r * cos(angle); // with angle and radius we can make a pythagorean triangle.
+  top = x + r * cos(angle);
   left = y + r * sin(angle);
-  if (top < 832 && left < 600) {
-    //check if the point falls in the screen.
+  if (top - w > 0 && top + w < 832 && left - w > 0 && left + w < 600) {
     return [top, left]; // TODO: make sure buttons don't overlap.
   } else {
-    // TODO: make sure the buttons fit entirely in the screen.
-    return findTarget(r, x, y); // recursive call to make another try.
+    return findTarget(r, w, x, y);
   }
 }
 
@@ -25,12 +29,21 @@ class Experiment extends StatefulWidget {
 }
 
 class _ExperimentState extends State<Experiment> {
-  double topRandom = Random().nextInt(350).toDouble() +
-      250.0; // Generate topRandom for start. TODO: change numbers.
-  double leftRandom = Random().nextInt(320).toDouble(); // TODO: change numbers.
-  List Target = [100, 100]; // 100 is Trivial.
-  int width = 50; // So are these two.
-  int dist = 200;
+  double topRandom = 300.0;
+  double leftRandom = 530.0;
+  // double topRandom = Random().nextInt(350).toDouble() +
+  // 250.0; // Generate topRandom for start. TODO: change numbers.
+  // double leftRandom = Random().nextInt(320).toDouble(); // TODO: change numbers.
+  double targetTop = 100.0;
+  double targetLeft = 100.0;
+  List startPoint = [300.0, 300.0];
+  List targetPoint = [100.0, 100.0];
+  bool startVisible = true;
+  bool targetVisible = false;
+  bool startTapped = false;
+  double startWidth = 70.0;
+  double targetwidth = 120.0; // So are these two.
+  double dist = 200.0;
   @override
   void initState() {
     print(
@@ -50,19 +63,13 @@ class _ExperimentState extends State<Experiment> {
         title: Text("Experiment Started! - Type : $inputMethod"),
       ),
       body: InkWell(
-        // this is for finding errors. when user taps white screen this triggers. luckily doesn't trigger for buttons.
         onTap: () {
           print("Stack Tapped!!!!");
         },
         child: Stack(
           children: [
-            newStartPoint(), // This function makes a random start point
-            Positioned(
-              // haven't got time to work on this. yet.
-              child: TargetPoint(200),
-              top: 100,
-              left: 50,
-            )
+            newStartPoint(),
+            newTargetPoint(),
           ],
         ),
       ),
@@ -70,67 +77,52 @@ class _ExperimentState extends State<Experiment> {
   }
 
   Widget newStartPoint() => Positioned(
-        height: 100, // TODO: gotta choose 3 of these
-        width: 100, // and these. (A, W).
+        height: startWidth,
+        width: startWidth,
+        child: Visibility(
+          visible: startVisible,
+          child: FloatingActionButton(
+            heroTag: 'start',
+            backgroundColor: Colors.green[400],
+            child: Text("Start"),
+            onPressed: () {
+              setState(() {
+                startVisible = !startVisible;
+                startTapped = true;
+                // print("topRandom is $topRandom");
+                // print("leftRandom is $leftRandom");
+              });
+            },
+          ),
+        ),
+        top: topRandom,
+        left: leftRandom,
+      );
+  Widget newTargetPoint() => Positioned(
+        height: targetwidth,
+        width: targetwidth,
         child: FloatingActionButton(
-          backgroundColor: Colors.amber,
-          child: Text("A"),
+          heroTag: 'target',
+          backgroundColor: Colors.red[600],
+          child: Text("Target"),
           onPressed: () {
             setState(() {
-              topRandom = Random().nextInt(350).toDouble() +
-                  250.0; // Make a new random position.
-              leftRandom = Random().nextInt(320).toDouble();
-              Target = findTarget(100, topRandom, leftRandom);
-              // print("topRandom is $topRandom");
-              // print("leftRandom is $leftRandom");
-              print("Target is on $Target"); // just to track what's going on.
+              if (startTapped == true) {
+                startVisible = !startVisible;
+                startTapped = false;
+                startPoint = findStart(startWidth);
+                topRandom = startPoint[0];
+                leftRandom = startPoint[1];
+                targetPoint =
+                    findTarget(dist, targetwidth, topRandom, leftRandom);
+                targetTop = targetPoint[0];
+                targetLeft = targetPoint[1];
+                // print("Target is on $targetPoint");
+              }
             });
           },
         ),
-        top: topRandom, // used those random numbers here.
-        left: leftRandom,
+        top: targetTop,
+        left: targetLeft,
       );
-}
-
-class StartingPoint extends StatefulWidget {
-  @override
-  _StartingPointState createState() => _StartingPointState();
-}
-
-class _StartingPointState extends State<StartingPoint> {
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-      backgroundColor: Colors.amber,
-      child: Text("A"),
-      onPressed: () {},
-    );
-  }
-}
-
-class TargetPoint extends StatefulWidget {
-  int buttonHeight = 50;
-  TargetPoint(targetSize) {
-    buttonHeight = targetSize;
-  }
-  @override
-  _TargetPointState createState() => _TargetPointState();
-}
-
-class _TargetPointState extends State<TargetPoint> {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialButton(
-      height: widget.buttonHeight.toDouble(),
-      color: Colors.red[800],
-      shape: CircleBorder(),
-      onPressed: () {
-        // Navigator.pop(context);
-        setState(() {
-          TargetPoint(200);
-        });
-      },
-      child: Text('TARGET'),
-    );
-  }
 }
