@@ -32,10 +32,12 @@ class _ExperimentState extends State<Experiment> {
 
   @override
   Widget build(BuildContext context) {
+    String inputMethod;
+    inputMethod = ModalRoute.of(context).settings.arguments;
     print("build function ran----");
     return Scaffold(
       appBar: AppBar(
-        title: Text("Experiment Started!"),
+        title: Text("Experiment Started! - Type : $inputMethod"),
       ),
       body: InkWell(
         onTap: () {

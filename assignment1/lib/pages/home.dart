@@ -41,7 +41,8 @@ class _HomeState extends State<Home> {
                   width: 150.0,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/experiment');
+                      Navigator.pushNamed(context, '/experiment',
+                          arguments: 'Thumb');
                     },
                     child: const Text(
                       "Thumb",
@@ -55,7 +56,8 @@ class _HomeState extends State<Home> {
                   width: 200.0,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/experiment');
+                      Navigator.pushNamed(context, '/experiment',
+                          arguments: 'Index');
                     },
                     child: const Text(
                       "Index Finger",
