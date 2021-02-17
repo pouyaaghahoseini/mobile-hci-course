@@ -1,26 +1,59 @@
 import 'dart:io';
 import 'dart:math';
 import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:downloads_path_provider/downloads_path_provider.dart';
+import 'package:simple_permissions/simple_permissions.dart';
 
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
 
+Directory _downloadsDirectory;
+
 class _HomeState extends State<Home> {
-  getPermission() async {
-    var permitStatus = await Permission.storage.status;
-    print(permitStatus);
-    Permission.storage.request();
+  Directory _downloadsDirectory;
+  @override
+  void initState() {
+    super.initState();
+    print("Home Init -- ");
+    initDownloadsDirectoryState();
+  }
+
+  Future<void> initDownloadsDirectoryState() async {
+    Directory downloadsDirectory;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      downloadsDirectory = await DownloadsPathProvider.downloadsDirectory;
+    } on PlatformException {
+      print('Could not get the downloads directory');
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      _downloadsDirectory = downloadsDirectory;
+    });
+  }
+
+  void requestPermission() async {
+    final res = await SimplePermissions.requestPermission(
+        Permission.WriteExternalStorage);
+    print("permission request result is " + res.toString());
   }
 
   @override
   Widget build(BuildContext context) {
     print("Home build --");
-    getPermission();
-
+    // requestPermission();
+    // String path = _downloadsDirectory.path;
+    // File myFile = File('$path/counter.txt');
+    // myFile.writeAsString('Hello');
     return Scaffold(
       backgroundColor: Color(0xff15202b),
       appBar: AppBar(
@@ -42,6 +75,15 @@ class _HomeState extends State<Home> {
                   color: Colors.white,
                   fontWeight: FontWeight.bold),
             ),
+            Text(
+              _downloadsDirectory != null
+                  ? 'Downloads directory: ${_downloadsDirectory.path}\n'
+                  : 'Could not get the downloads directory',
+              style: TextStyle(
+                  fontSize: 35,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
             SizedBox(
               height: 40.0,
             ),
@@ -55,7 +97,7 @@ class _HomeState extends State<Home> {
                     onPressed: () {
                       Navigator.pushNamed(context,
                           '/experiment', // gotta push the next screen while passing the input method
-                          arguments: ('Thumb' + DateTime.now().toString()));
+                          arguments: 'Thumb');
                     },
                     child: const Text(
                       "Thumb",
@@ -71,7 +113,7 @@ class _HomeState extends State<Home> {
                     onPressed: () {
                       Navigator.pushNamed(context,
                           '/experiment', // gotta push the next screen while passing the input method.
-                          arguments: ('Index' + DateTime.now().toString()));
+                          arguments: 'Index');
                     },
                     child: const Text(
                       "Index Finger",

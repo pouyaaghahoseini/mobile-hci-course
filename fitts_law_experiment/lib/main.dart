@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:assignment1/pages/home.dart'; //the address of home page code.
-import 'package:assignment1/pages/experiment.dart'; // all the codes of Experiment page is here.
+import 'package:fitts_law_experiment/pages/home.dart'; //the address of home page code.
+import 'package:fitts_law_experiment/pages/experiment.dart'; // all the codes of Experiment page is here.
 
 void main() {
   runApp(MaterialApp(

@@ -1,11 +1,13 @@
-import 'dart:io';
-import 'dart:async';
+// import 'dart:io';
+// import 'dart:async';
+// import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-const int eachtrialrep = 2;
-List W = [50.0, 100.0, 150.0];
-List A = [300.0, 380.0, 460.0];
+const int eachtrialrep = 10;
+List W = [60.0, 140.0, 180.0];
+List A = [100.0, 200.0, 450.0];
 const double startWidth = 110.0;
 
 class Trial {
@@ -16,26 +18,11 @@ class Trial {
   int errors = 0;
   double mt = 0;
   void printTrial() {
-    print("ID:$id," +
-        " Width:$width," +
-        " A:$a," +
-        " errors:$errors," +
-        " MT:$mt");
-  }
-
-  String toStr() {
-    String temp = ("ID " +
-        "$id " +
-        "Width " +
-        "$width " +
-        "A " +
-        "$a " +
-        "errors " +
-        "$errors " +
-        "MT " +
-        "$mt" +
-        "\n");
-    return temp;
+    print("ID:$id " +
+        " -- Width:$width " +
+        "-- A:$a" +
+        "-- errors:$errors" +
+        "-- MT:$mt");
   }
 
   void increaseErrors() {
@@ -50,7 +37,7 @@ class Trial {
 List makeDeck() {
   List deck = [];
   for (int i = 1; i < A.length * W.length + 1; i++) {
-    for (int j = 0; j < eachtrialrep; j++) {
+    for (int j = 1; j < eachtrialrep; j++) {
       deck.add(i);
     }
   }
@@ -69,46 +56,77 @@ List makeTrials() {
 }
 
 List findStart() {
-  double starttop;
-  double startleft;
-  starttop = Random().nextDouble() * (888.0 - startWidth) + 24.0;
-  startleft = Random().nextDouble() * (600.0 - startWidth);
-  return [starttop, startleft];
+  double top;
+  double left;
+  top = Random().nextDouble() * (832.0 - 2 * startWidth) + (startWidth);
+  left = Random().nextDouble() * (600.0 - 2 * startWidth) + (startWidth);
+  return [top, left];
 }
 
 List findTarget(double r, double tw, double x, double y) {
-  double endtop;
-  double endleft;
+  double top;
+  double left;
   double angle;
-  angle = Random().nextDouble() * 2 * pi;
-  // if (x <= 456.0) {
-  //   if (y <= 300.0) {
-  //     angle = Random().nextDouble() * 0.5 * pi;
-  //   } else {
-  //     angle = Random().nextDouble() * 0.5 * pi + 1.5 * pi;
-  //   }
-  // } else {
-  //   if (y <= 300.0) {
-  //     angle = Random().nextDouble() * 0.5 * pi + 0.5 * pi;
-  //   } else {
-  //     angle = Random().nextDouble() * 0.5 * pi + pi;
-  //   }
-  // }
-  endtop = x + r * cos(angle);
-  endleft = y + r * sin(angle);
-  if (endtop < x + startWidth &&
-      endtop + tw > x &&
-      endleft < y + startWidth &&
-      endleft + tw > y) {
+
+  // double a = sqrt(pow(x-tw, 2) + pow(y-tw, 2) );
+  if (x <= 416.0) {
+    if (y <= 300.0) {
+      angle = Random().nextDouble() * 0.5 * pi;
+    } else {
+      angle = Random().nextDouble() * 0.5 * pi + 1.5 * pi;
+    }
+  } else {
+    if (y <= 300.0) {
+      angle = Random().nextDouble() * 0.5 * pi + 0.5 * pi;
+    } else {
+      angle = Random().nextDouble() * 0.5 * pi + pi;
+    }
+  }
+  top = x + r * cos(angle);
+  left = y + r * sin(angle);
+  if (top < x + startWidth &&
+      top + tw > x &&
+      left < y + startWidth &&
+      left + tw > y) {
     return findTarget(r, tw, x, y);
   }
-  if (endtop > 24.0 && endtop + tw < 832 && endleft > 0 && endleft + tw < 600) {
-    return [endtop, endleft];
+  if (top - tw > 0 && top + tw < 832 && left - tw > 0 && left + tw < 600) {
+    return [top, left];
   }
   return findTarget(r, tw, x, y);
 }
 
+class Entry {
+  String name;
+  String gender;
+  int age;
+  Entry(this.name, this.gender, this.age);
+}
+
+Entry temp = Entry("Peter", "Male", 25);
+getCsv() async {
+  //create an element rows of type list of list. All the above data set are stored in associate list
+//Let associate be a model class with attributes name,gender and age and associateList be a list of associate model class.
+
+  List<Entry> associateList = [
+    Entry("Peter", "Male", 25),
+    Entry("Samy", "Male", 32),
+    Entry("Steve", "Male", 22)
+  ];
+
+  List<List<dynamic>> rows = List<List<dynamic>>();
+  for (int i = 0; i < associateList.length; i++) {
+//row refer to each column of a row in csv file and rows refer to each row in a file
+    List<dynamic> row = List();
+    row.add(associateList[i].name);
+    row.add(associateList[i].gender);
+    row.add(associateList[i].age);
+    rows.add(row);
+  }
+}
+
 class Experiment extends StatefulWidget {
+  // Previous name was SecondRoute.
   @override
   _ExperimentState createState() => _ExperimentState();
 }
@@ -117,10 +135,10 @@ class _ExperimentState extends State<Experiment> {
   List deck = makeDeck();
   List trials = makeTrials();
   int id = 1;
-  double topRandom;
-  double leftRandom;
-  double targetTop;
-  double targetLeft;
+  double topRandom = 300.0;
+  double leftRandom = 500.0;
+  double targetTop = 100.0;
+  double targetLeft = 100.0;
   List startPoint;
   List targetPoint;
   bool startVisible = true;
@@ -129,40 +147,25 @@ class _ExperimentState extends State<Experiment> {
   double dist = 200.0;
   DateTime startTime, endTime;
   int movementTime;
-  String filepath = ("/storage/emulated/0/Download/");
-  String fileName;
+
   @override
   void initState() {
-    startPoint = findStart();
-    topRandom = startPoint[0];
-    leftRandom = startPoint[1];
-    int idx = Random().nextInt(deck.length);
-    id = deck[idx];
-    targetwidth = trials[id - 1].width;
-    dist = trials[id - 1].a;
-    targetPoint = findTarget(dist, targetwidth, topRandom, leftRandom);
-    targetTop = targetPoint[0];
-    targetLeft = targetPoint[1];
-    deck.removeAt(idx);
     print(
         "initstate function ran------------"); // just to track what's going on.
     super.initState();
   }
 
-  Future<File> get _localFile async {
-    return File("$filepath" + "/" + "$fileName" + ".txt");
-  }
-
-  Future<File> writeMessage(String message) async {
-    final file = await _localFile;
-    return file.writeAsString(message, mode: FileMode.write);
-  }
-
   @override
   Widget build(BuildContext context) {
-    fileName = ModalRoute.of(context).settings.arguments;
-    print("build function ran----");
+    String inputMethod;
+    inputMethod = ModalRoute.of(context)
+        .settings
+        .arguments; // get the input method from home page. Thumb or Index
+    print("build function ran----"); // just to track what's going on.
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Experiment Started! - Type : $inputMethod"),
+      ),
       body: InkWell(
         onTap: () {
           print("Stack Tapped!!!!");
@@ -212,11 +215,11 @@ class _ExperimentState extends State<Experiment> {
             if (deck.isNotEmpty) {
               setState(() {
                 if (startTapped == true) {
-                  startVisible = !startVisible;
                   startTapped = false;
                   movementTime =
                       DateTime.now().difference(startTime).inMilliseconds;
                   trials[id - 1].addMT(movementTime.toDouble());
+                  startVisible = !startVisible;
                   startPoint = findStart();
                   topRandom = startPoint[0];
                   leftRandom = startPoint[1];
@@ -234,12 +237,6 @@ class _ExperimentState extends State<Experiment> {
               }); //setState
             } //if
             else {
-              String message = "";
-              for (int i = 0; i < trials.length; i++) {
-                message += trials[i].toStr();
-                trials[i].printTrial();
-              }
-              writeMessage(message);
               Navigator.pop(context);
             }
           }, //onPressed
