@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'Constants.dart';
+import 'dart:math';
 
 void main() {
   runApp(MyApp());
@@ -29,19 +30,26 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Offset> points = <Offset>[];
-  Offset
-      firstPoint; //for remembering the first point of the line (for line mode)
-  String mode =
-      "FreeDraw"; //for passing the mode selected from popup menu to others
+  List<Offset> pointsCircle = <Offset>[]; //for the center of the circle
+  List<double> radiusCircle = <double>[]; //for radius of the circle
+  List<Offset> pointsRectangle =
+      <Offset>[]; //for the upleft point of the rectangle
+  List<Size> sizeRectangle = <Size>[]; //for the size of the rectangle
+  List<Offset> pointsTemp =
+      <Offset>[]; //for remembering the last thing that user draw
+  Offset firstPoint;
+  String mode = "FreeDraw"; //for passing the mode from popupmenu to others
 
   @override
   Widget build(BuildContext context) {
     final Container sketchArea = Container(
       margin: EdgeInsets.all(4.0),
       alignment: Alignment.topLeft,
-      color: Colors.blueGrey[50], //background color of the paint area
+      color: Colors.blueGrey[50], //background color
       child: CustomPaint(
-        painter: Sketcher(points, mode),
+        // size: Size(500, 500),
+        painter: Sketcher(points, pointsCircle, radiusCircle, pointsRectangle,
+            sizeRectangle, mode),
       ),
     );
 
@@ -64,13 +72,18 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: GestureDetector(
         onPanDown: (DragDownDetails details) {
+          points.add(null);
           setState(() {
+            pointsTemp.clear(); //the previous drawing should be clear
+
             RenderBox box2 = context.findRenderObject(); //finds the scaffold
             Offset point2 = box2.globalToLocal(details.globalPosition);
             point2 =
                 point2.translate(0.0, -(AppBar().preferredSize.height + 30));
-            firstPoint = point2; //for the first point of the line mode
-            points = List.from(points)..add(point2);
+            firstPoint =
+                point2; //for finding the first point that user touch the screen
+            points = List.from(points)
+              ..add(point2); //add the points when user drag in screen
           });
         },
         onPanUpdate: (DragUpdateDetails details) {
@@ -80,6 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Offset point = box.globalToLocal(details.globalPosition);
             point = point.translate(0.0, -(AppBar().preferredSize.height + 30));
 
+            pointsTemp = List.from(pointsTemp)..add(point);
             points = List.from(points)
               ..add(point); //add the points when user drag in screen
           });
@@ -91,16 +105,26 @@ class _MyHomePageState extends State<MyHomePage> {
                   points.last; //storing the last point for drawing the line
               points = List.from(points)..add(firstPoint);
               points = List.from(points)..add(lastPoint);
-              points.add(null);
+
               int firstInx = List.from(points).indexOf(firstPoint);
-              int lastindx = List.from(points).lastIndexOf(firstPoint);
+              int lastInx = List.from(points).lastIndexOf(firstPoint);
 
+              points.removeRange(firstInx, lastInx); //removing what uset drew
+            } else if (mode == "Circle") {
+              Offset lastPoint = points.last;
+              int firstInx = List.from(points).lastIndexOf(firstPoint);
+              int lastInx = List.from(points).lastIndexOf(lastPoint);
               points.removeRange(
-                  firstInx, lastindx); //erasing the line that use drew
-
-            } else if (mode == "FreeDraw") {
-              points.add(null);
-            }
+                  firstInx, lastInx); //removing what the user drew
+              findCircleCenterRadius(); //adding the circle center and radius to the right lists
+            } else if (mode == "Rectangle") {
+              Offset lastPoint = points.last;
+              int firstInx = List.from(points).lastIndexOf(firstPoint);
+              int lastInx = List.from(points).lastIndexOf(lastPoint);
+              points.removeRange(
+                  firstInx, lastInx); //removing what the user drew
+              findRectanglePointSize();
+            } else if (mode == "FreeDraw") {}
           });
         },
         child: sketchArea,
@@ -112,110 +136,98 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () {
           setState(() {
             points.clear();
+            pointsCircle.clear();
+            radiusCircle.clear();
+            pointsRectangle.clear();
+            sizeRectangle.clear();
           });
         },
       ),
     );
   }
 
+  findCircleCenterRadius() {
+    double maxX = 0, maxY = 0, minX = 10000, minY = 10000;
+    for (int i = 0; i < pointsTemp.length - 1; i++) {
+      if (pointsTemp[i] != null) {
+        maxX = max(pointsTemp[i].dx, maxX);
+        maxY = max(pointsTemp[i].dy, maxY);
+        minX = min(pointsTemp[i].dx, minX);
+        minY = min(pointsTemp[i].dy, minY);
+      }
+    }
+    pointsCircle = List.from(pointsCircle)
+      ..add(Offset(minX + ((maxX - minX) / 2), minY + ((maxY - minY) / 2)));
+    pointsCircle.add(null);
+    radiusCircle = List.from(radiusCircle)
+      ..add(max((maxX - minX) / 2, (maxY - minY) / 2));
+    radiusCircle.add(null);
+  }
+
+  findRectanglePointSize() {
+    double maxX = 0, maxY = 0, minX = 10000, minY = 10000;
+    for (int i = 0; i < pointsTemp.length - 1; i++) {
+      if (pointsTemp[i] != null) {
+        maxX = max(pointsTemp[i].dx, maxX);
+        maxY = max(pointsTemp[i].dy, maxY);
+        minX = min(pointsTemp[i].dx, minX);
+        minY = min(pointsTemp[i].dy, minY);
+      }
+    }
+    pointsRectangle = List.from(pointsRectangle)..add(Offset(minX, minY));
+    pointsRectangle.add(null);
+    sizeRectangle = List.from(sizeRectangle)
+      ..add(Size(maxX - minX, maxY - minY));
+    sizeRectangle.add(null);
+  }
+
   void menuSelected(String choice) {
     // when popup menu is selected
-
-    switch (choice) {
-      case Constants.freeDraw:
-        {
-          mode = "FreeDraw";
-          print("#### Free Draw has been selected ####");
-        }
-        break;
-
-      case Constants.line:
-        {
-          mode = "Line";
-          print("#### Line has been selected ####");
-        }
-        break;
-
-      case Constants.circle:
-        {
-          mode = "Circle";
-          print("#### Circle has been selected ####");
-        }
-        break;
-
-      case Constants.rectangle:
-        {
-          mode = "Rectangle";
-          print("#### Rectangle has been selected ####");
-        }
-        break;
-      case Constants.triangle:
-        {
-          mode = "Triangle";
-          print("#### Triangle has been selected ####");
-        }
-        break;
-      default:
-        {
-          //statements;
-        }
-        break;
-    }
-  } //end of the menuSelected method
-
+    mode = choice.toString();
+  }
 }
 
 class Sketcher extends CustomPainter {
   final List<Offset> points;
+  final List<Offset> pointsCircle;
+  final List<double> radiusCircle;
+  final List<Offset> pointsRectangle;
+  final List<Size> sizeRectangle;
+
   String mode;
-  Sketcher(this.points, this.mode);
+  Sketcher(this.points, this.pointsCircle, this.radiusCircle,
+      this.pointsRectangle, this.sizeRectangle, this.mode);
 
   @override
   bool shouldRepaint(Sketcher oldDelegate) {
-    return oldDelegate.points != points;
+    return (oldDelegate.points != points ||
+        oldDelegate.pointsCircle != pointsCircle ||
+        oldDelegate.pointsRectangle != pointsRectangle);
   }
 
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..color = Colors.black //seting the color of the drawing
       ..strokeCap = StrokeCap.round //the shape of a single dot (single touch)
-      ..strokeWidth = 4.0; // the width of a single dot (single touch)
+      ..strokeWidth = 4.0 // the width of a single dot (single touch)
+      ..style = PaintingStyle.stroke; //to make the shaped hollow
 
-    switch (mode) {
-      case "FreeDraw":
-        {
-          for (int i = 0; i < points.length - 1; i++) {
-            if (points[i] != null && points[i + 1] != null) {
-              canvas.drawLine(points[i], points[i + 1], paint);
-            }
-          }
-        }
-        break;
-      case "Line":
-        {
-          for (int i = 0; i < points.length - 1; i++) {
-            if (points[i] != null && points[i + 1] != null) {
-              canvas.drawLine(points[i], points[i + 1], paint);
-            }
-          }
-        }
-        break;
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i], points[i + 1], paint);
+      }
+    }
 
-      case "Circle":
-        {}
-        break;
+    for (int i = 0; i < pointsCircle.length - 1; i++) {
+      if (pointsCircle[i] != null && radiusCircle[i] != null) {
+        canvas.drawCircle(pointsCircle[i], radiusCircle[i], paint);
+      }
+    }
 
-      case "Rectangle":
-        {}
-        break;
-      case "Triangle":
-        {}
-        break;
-      default:
-        {
-          //statements;
-        }
-        break;
+    for (int i = 0; i < pointsRectangle.length - 1; i++) {
+      if (pointsRectangle[i] != null && sizeRectangle[i] != null) {
+        canvas.drawRect(pointsRectangle[i] & sizeRectangle[i], paint);
+      }
     }
   }
 }
