@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-const int eachtrialrep = 2;
+const int eachtrialrep = 10;
 List W = [50.0, 100.0, 150.0];
 List A = [300.0, 380.0, 460.0];
 const double startWidth = 110.0;
