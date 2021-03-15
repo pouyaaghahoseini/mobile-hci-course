@@ -4,6 +4,30 @@ import 'package:flutter/material.dart';
 import 'Constants.dart';
 import 'dart:math';
 
+class Triangle {
+  Offset v1;
+  Offset v2;
+  Offset v3;
+  void disp() {
+    print("V1: $v1");
+    print("V2: $v2");
+    print("V3: $v3");
+  }
+}
+
+class Rectangle {
+  Offset v1;
+  Offset v2;
+  Offset v3;
+  Offset v4;
+  void disp() {
+    print("V1: $v1");
+    print("V2: $v2");
+    print("V3: $v3");
+    print("V4: $v4");
+  }
+}
+
 void main() {
   runApp(MyApp());
 }
@@ -33,7 +57,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Offset> points = <Offset>[];
   List<Offset> pointsCircle = <Offset>[]; //for the center of the circle
-  List<Offset> pointsTriangle = <Offset>[];
+  List<Triangle> allTriangles = <Triangle>[];
+  List<Rectangle> allRectangles = <Rectangle>[];
   List<double> radiusCircle = <double>[]; //for radius of the circle
   List<Offset> pointsRectangle =
       <Offset>[]; //for the upleft point of the rectangle
@@ -50,9 +75,9 @@ class _MyHomePageState extends State<MyHomePage> {
       alignment: Alignment.topLeft,
       color: Colors.blueGrey[50], //background color
       child: CustomPaint(
-        // size: Size(500, 500),
+        // size: Size(600, 800),
         painter: Sketcher(points, pointsCircle, radiusCircle, pointsRectangle,
-            sizeRectangle, pointsTriangle, mode),
+            sizeRectangle, allRectangles, allTriangles, mode),
       ),
     );
 
@@ -60,6 +85,33 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         actions: <Widget>[
+          RaisedButton(
+            onPressed: () {},
+            color: Colors.red,
+            textColor: Colors.black,
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(80.0),
+            ),
+            child: Text("Red"),
+          ),
+          RaisedButton(
+            onPressed: () {},
+            color: Colors.purple,
+            textColor: Colors.black,
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(80.0),
+            ),
+            child: Text("Red"),
+          ),
+          RaisedButton(
+            onPressed: () {},
+            color: Colors.yellow,
+            textColor: Colors.black,
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(80.0),
+            ),
+            child: Text("Red"),
+          ),
           PopupMenuButton<String>(
             onSelected: menuSelected,
             itemBuilder: (BuildContext context) {
@@ -126,7 +178,8 @@ class _MyHomePageState extends State<MyHomePage> {
               int lastInx = List.from(points).lastIndexOf(lastPoint);
               points.removeRange(
                   firstInx, lastInx); //removing what the user drew
-              findRectanglePointSize();
+              // findRectanglePointSize();
+              findRectangle();
             } else if (mode == "Triangle") {
               Offset lastPoint = points.last;
               int firstInx = List.from(points).lastIndexOf(firstPoint);
@@ -149,7 +202,8 @@ class _MyHomePageState extends State<MyHomePage> {
             pointsCircle.clear();
             radiusCircle.clear();
             pointsRectangle.clear();
-            pointsTriangle.clear();
+            allRectangles.clear();
+            allTriangles.clear();
             sizeRectangle.clear();
           });
         },
@@ -192,47 +246,107 @@ class _MyHomePageState extends State<MyHomePage> {
     sizeRectangle.add(null);
   }
 
+  findRectangle() {
+    Offset v1, v2, v3, v4;
+    double maxDist = 0.0;
+    for (int i = 1; i < pointsTemp.length - 1; i++) {
+      if (pointsTemp[i] != null) {
+        if ((pointsTemp[0] - pointsTemp[i]).distance >= maxDist) {
+          maxDist = (pointsTemp[0] - pointsTemp[i]).distance;
+          v1 = pointsTemp[i];
+        }
+      }
+    }
+    maxDist = 0.0;
+    for (int i = 0; i < pointsTemp.length - 1; i++) {
+      if (pointsTemp[i] != null) {
+        if ((v1 - pointsTemp[i]).distance >= maxDist) {
+          maxDist = (v1 - pointsTemp[i]).distance;
+          v2 = pointsTemp[i];
+        }
+      }
+    }
+    maxDist = 0.0;
+    for (int i = 0; i < pointsTemp.length - 1; i++) {
+      if (pointsTemp[i] != null) {
+        Offset C = pointsTemp[i];
+        double d = ((v2.dx - v1.dx) * (v1.dy - C.dy) -
+                (v1.dx - C.dx) * (v2.dy - v1.dy))
+            .abs();
+        double rd = d / ((v2 - v1).distance);
+        if ((rd >= maxDist)) {
+          maxDist = rd;
+          v3 = pointsTemp[i];
+        }
+      }
+    }
+    maxDist = 0.0;
+    for (int i = 0; i < pointsTemp.length - 1; i++) {
+      if (pointsTemp[i] != null) {
+        if ((v3 - pointsTemp[i]).distance >= maxDist) {
+          maxDist = (v3 - pointsTemp[i]).distance;
+          v4 = pointsTemp[i];
+        }
+      }
+    }
+    Rectangle r = new Rectangle();
+    r.v1 = v1;
+    r.v2 = v2;
+    r.v3 = v3;
+    r.v4 = v4;
+    r.disp();
+    double dist = (v2 - v3).distance;
+    double dir = (v1 - v3).direction + pi / 2;
+    print(dir);
+    r.v2 = Offset((v3.dx + dist * cos(dir)), (v3.dy + dist * sin(dir)));
+    r.v4 = Offset((v1.dx + dist * cos(dir)), (v1.dy + dist * sin(dir)));
+
+    r.disp();
+    allRectangles = List.from(allRectangles)..add(r);
+    allRectangles.add(null);
+  }
+
   findTriangle() {
-    double maxX = 0, maxY = 0, minX = 10000, minY = 10000;
-    Offset a, b, c, d;
-    for (int i = 0; i < pointsTemp.length - 1; i++) {
+    Offset v1, v2, v3;
+    double maxDist = 0.0;
+    for (int i = 1; i < pointsTemp.length - 1; i++) {
       if (pointsTemp[i] != null) {
-        maxX = max(pointsTemp[i].dx, maxX);
-        maxY = max(pointsTemp[i].dy, maxY);
-        minX = min(pointsTemp[i].dx, minX);
-        minY = min(pointsTemp[i].dy, minY);
-      }
-    }
-    for (int i = 0; i < pointsTemp.length - 1; i++) {
-      if (pointsTemp[i] != null) {
-        if (pointsTemp[i].dx == minX) {
-          a = pointsTemp[i];
-        }
-        if (pointsTemp[i].dx == maxX) {
-          b = pointsTemp[i];
-        }
-        if (pointsTemp[i].dy == minY) {
-          c = pointsTemp[i];
-        }
-        if (pointsTemp[i].dy == maxY) {
-          d = pointsTemp[i];
+        if ((pointsTemp[0] - pointsTemp[i]).distance >= maxDist) {
+          maxDist = (pointsTemp[0] - pointsTemp[i]).distance;
+          v1 = pointsTemp[i];
         }
       }
     }
-    if (!pointsTriangle.contains(a)) {
-      pointsTriangle = List.from(pointsTriangle)..add(a);
+    maxDist = 0.0;
+    for (int i = 0; i < pointsTemp.length - 1; i++) {
+      if (pointsTemp[i] != null) {
+        if ((v1 - pointsTemp[i]).distance >= maxDist) {
+          maxDist = (v1 - pointsTemp[i]).distance;
+          v2 = pointsTemp[i];
+        }
+      }
     }
-    if (!pointsTriangle.contains(b)) {
-      pointsTriangle = List.from(pointsTriangle)..add(b);
+    maxDist = 0.0;
+    for (int i = 0; i < pointsTemp.length - 1; i++) {
+      if (pointsTemp[i] != null) {
+        Offset C = pointsTemp[i];
+        double d = ((v2.dx - v1.dx) * (v1.dy - C.dy) -
+                (v1.dx - C.dx) * (v2.dy - v1.dy))
+            .abs();
+        double rd = d / ((v2 - v1).distance);
+        if ((rd >= maxDist)) {
+          maxDist = rd;
+          v3 = pointsTemp[i];
+        }
+      }
     }
-    if (!pointsTriangle.contains(c)) {
-      pointsTriangle = List.from(pointsTriangle)..add(c);
-    }
-    if (!pointsTriangle.contains(d)) {
-      pointsTriangle = List.from(pointsTriangle)..add(d);
-    }
-    pointsTriangle.add(null);
-    print(pointsTriangle);
+    Triangle t = new Triangle();
+    t.v1 = v1;
+    t.v2 = v2;
+    t.v3 = v3;
+    t.disp();
+    allTriangles = List.from(allTriangles)..add(t);
+    allTriangles.add(null);
   }
 
   void menuSelected(String choice) {
@@ -247,18 +361,27 @@ class Sketcher extends CustomPainter {
   final List<double> radiusCircle;
   final List<Offset> pointsRectangle;
   final List<Size> sizeRectangle;
-  final List<Offset> pointsTriangle;
+  final List<Rectangle> allRectangles;
+  final List<Triangle> allTriangles;
 
   String mode;
-  Sketcher(this.points, this.pointsCircle, this.radiusCircle,
-      this.pointsRectangle, this.sizeRectangle, this.pointsTriangle, this.mode);
+  Sketcher(
+      this.points,
+      this.pointsCircle,
+      this.radiusCircle,
+      this.pointsRectangle,
+      this.sizeRectangle,
+      this.allRectangles,
+      this.allTriangles,
+      this.mode);
 
   @override
   bool shouldRepaint(Sketcher oldDelegate) {
     return (oldDelegate.points != points ||
-            oldDelegate.pointsCircle != pointsCircle ||
-            oldDelegate.pointsRectangle != pointsRectangle) ||
-        oldDelegate.pointsTriangle != pointsTriangle;
+        oldDelegate.pointsCircle != pointsCircle ||
+        oldDelegate.pointsRectangle != pointsRectangle ||
+        oldDelegate.allRectangles != allRectangles ||
+        oldDelegate.allTriangles != allTriangles);
   }
 
   void paint(Canvas canvas, Size size) {
@@ -285,18 +408,27 @@ class Sketcher extends CustomPainter {
         canvas.drawRect(pointsRectangle[i] & sizeRectangle[i], paint);
       }
     }
-    // for (int i = 0; i < pointsTriangle.length - 1; i++) {
-    //   if (pointsTriangle[i] != null) {
-    //     canvas.drawPoints(PointMode.points, pointsTriangle, paint);
-    //   }
-    // }
-    var path = Path();
-    path.addPolygon([
-      pointsTriangle[0],
-      pointsTriangle[1],
-      pointsTriangle[2],
-      pointsTriangle[3]
-    ], true);
-    canvas.drawPath(path, paint);
+    print("AllRectangles: $allRectangles");
+    for (int i = 0; i < allRectangles.length - 1; i++) {
+      if (allRectangles[i] != null) {
+        var rectanglePath = Path();
+        rectanglePath.addPolygon([
+          allRectangles[i].v1,
+          allRectangles[i].v3,
+          allRectangles[i].v2,
+          allRectangles[i].v4
+        ], true);
+        canvas.drawPath(rectanglePath, paint);
+      }
+    }
+    print("AllTriangles: $allTriangles");
+    for (int i = 0; i < allTriangles.length - 1; i++) {
+      if (allTriangles[i] != null) {
+        var trianglePath = Path();
+        trianglePath.addPolygon(
+            [allTriangles[i].v1, allTriangles[i].v2, allTriangles[i].v3], true);
+        canvas.drawPath(trianglePath, paint);
+      }
+    }
   }
 }
